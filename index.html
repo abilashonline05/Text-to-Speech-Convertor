@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text to Speech Converter</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎙️ Text to Speech Converter</h1>
+
+      <textarea
+        id="text-input"
+        placeholder="Type or paste your text here..."
+      ></textarea>
+      <button id="convert-btn">Convert to Speech</button>
+
+      <div class="audio-section">
+        <audio id="audio-player" controls></audio>
+      </div>
+
+      <div class="history-section">
+        <h2>Conversion History</h2>
+        <ul id="history-list"></ul>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+      const button = document.getElementById("convert-btn");
+      const input = document.getElementById("text-input");
+      const audioPlayer = document.getElementById("audio-player");
+
+      button.addEventListener("click", async () => {
+        const text = input.value.trim();
+        if (!text) {
+          alert("Please enter some text!");
+          return;
+        }
+
+        try {
+          button.disabled = true;
+          button.innerText = "Converting...";
+
+          const response = await fetch("http://localhost:5000/api/tts", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text }),
+          });
+
+          const data = await response.json();
+
+          if (data.audioUrl) {
+            audioPlayer.src = data.audioUrl;
+            audioPlayer.play();
+          } else {
+            alert("Failed to generate speech. Try again.");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error connecting to the server!");
+        } finally {
+          button.disabled = false;
+          button.innerText = "Convert to Speech";
+        }
+      });
+    </script>
+  </body>
+</html>
